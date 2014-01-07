@@ -1,0 +1,45 @@
+{
+    "name": "vektah/composer-dist-cache",
+    "description": "Caches requests to a central package repository like packagist.",
+    "homepage" : "https://github.com/Vektah/composer-dist-cache",
+    "license" : "BSD-2-Clause",
+
+    "authors" : [
+        {
+            "name": "Adam Scarr",
+            "email": "scarr.adam@gmail.com",
+            "homepage": "http://github.com/Vektah",
+            "role": "Developer"
+        }
+    ],
+
+    "autoload": {
+        "psr-0": {
+            "vektah\\composer\\cache": "src/main",
+            "vektah\\react_web": "src/main"
+        }
+    },
+
+    "require": {
+        "php": ">=5.4.0",
+        "ext-protobuf": "*",
+        "symfony/console": "*",
+        "vektah/parser-combinator": "0.1.1",
+        "vektah/common": "*",
+        "twig/twig" : "*",
+        "react/react": "0.3.*"
+    },
+
+    "bin": [
+        "bin/pprotoc"
+    ],
+
+    "require-dev": {
+        "phpunit/phpunit": "3.7.21",
+        "symfony/process": "*",
+        "phake/phake": "2.0.0-alpha2",
+        "squizlabs/php_codesniffer" : "1.4.5",
+        "vektah/bugfree-dangerzone": "0.2.6",
+        "vektah/psr2": "*"
+    }
+}

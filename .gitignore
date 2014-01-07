@@ -1,0 +1,7 @@
+/vendor
+/composer.lock
+/*.ipr
+/*.iml
+/*.iws
+/.idea
+/cache

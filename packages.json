@@ -1,0 +1,26 @@
+31c
+{
+    "packages": [
+
+    ],
+    "notify": "/downloads/%package%",
+    "notify-batch": "/downloads/",
+    "providers-url": "/p/%package%$%hash%.json",
+    "search": "/search.json?q=%query%",
+    "provider-includes": {
+        "p/provider-active$%hash%.json": {
+            "sha256": "33c7201bd94565dd308867e76de1eaec1b0a2eccfac500d935c539b00a698ca7"
+        },
+        "p/provider-archived$%hash%.json": {
+            "sha256": "e81db866cb28874c7c7040b45287a7d351bed16bd52547e258909a499744c553"
+        },
+        "p/provider-latest$%hash%.json": {
+            "sha256": "a2df95afdeca780e1e825c586c7ce7234c9606427df02c6859414e9d6989737d"
+        },
+        "p/provider-stale$%hash%.json": {
+            "sha256": "f2fa37ebb82a8a3ef051d5fbf2fe76fd99d05214c6c2573dda6e986317784b8b"
+        }
+    }
+}
+0
+
