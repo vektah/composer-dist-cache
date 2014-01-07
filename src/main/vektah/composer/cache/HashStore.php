@@ -86,6 +86,6 @@ class HashStore {
 
     public function save() {
         // Still not sure if this should be cached to disk or just ram...
-        file_put_contents($this->filename, Json::pretty($this->data));
+//        file_put_contents($this->filename, Json::pretty($this->data));
     }
 } 

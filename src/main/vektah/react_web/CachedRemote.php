@@ -40,20 +40,16 @@ class CachedRemote {
             return new FulfilledPromise($this->cached);
         }
 
-        echo "Downloading {$this->remote}\n";
-
         $deferred = new Deferred();
 
         $client = $context->getHttpClient();
-
+        echo "Requesting {$this->remote}\n";
         $request = $client->request('GET', $this->remote);
         $request->on('response', function($response) use ($deferred) {
-            echo "response\n";
             $buffer = '';
 
             $response->on('data', function($data) use (&$buffer) {
                 $buffer .= $data;
-                echo '.';
             });
 
             $response->on('end', function() use (&$buffer, $deferred) {
@@ -61,7 +57,7 @@ class CachedRemote {
                 $this->last_modified = time();
                 $this->cached = $buffer;
                 $deferred->resolve($this->cached);
-                echo "Fetch complete!\n";
+                echo "Downloaded {$this->remote}\n";
             });
         });
 

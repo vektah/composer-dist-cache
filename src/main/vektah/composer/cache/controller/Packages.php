@@ -9,9 +9,6 @@ use vektah\composer\cache\HashStore;
 use vektah\react_web\CachedRemote;
 
 class Packages {
-    /** @var CachedRemote[] */
-    private $cache = [];
-
     private $context;
 
     function __construct($context)
@@ -19,15 +16,6 @@ class Packages {
         $this->context = $context;
         $this->hash_store = new HashStore(__DIR__ . '/../../../../../../cache/hash_store.json');
         $this->mirror = new Mirror($this->context, $this->hash_store);
-    }
-
-
-    private function get($remote, $ttl = 36000) {
-        if (!$this->cache[$remote]) {
-            $this->cache[$remote] = new CachedRemote("http://composer2.porky.lan$remote", $ttl);
-        }
-
-        return $this->cache[$remote]->get($this->context);
     }
 
     public function packages() {

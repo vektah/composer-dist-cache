@@ -9,6 +9,7 @@ use React\Http\Response;
 use React\Socket\Server as SocketServer;
 use React\Http\Server as HttpServer;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use vektah\common\json\Json;
@@ -20,6 +21,9 @@ class Web extends Command {
     protected function configure()
     {
         $this->setName('web');
+
+        $this->addArgument('hostname', InputArgument::OPTIONAL, 'The host to bind to', 'localhost');
+        $this->addArgument('port', InputArgument::OPTIONAL, 'The port to bind to', 8000);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -43,7 +47,7 @@ class Web extends Command {
 
         $http->on('request', $app);
 
-        $socket->listen(1234, 'testing.vm');
+        $socket->listen($input->getArgument('port'), $input->getArgument('hostname'));
         $loop->run();
     }
 } 

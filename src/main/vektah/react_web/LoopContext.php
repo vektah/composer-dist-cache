@@ -8,6 +8,7 @@ use React\Dns\Resolver\Resolver;
 use React\HttpClient\Client;
 use React\HttpClient\Factory as HttpClientFactory;
 use React\EventLoop\LoopInterface;
+use vektah\composer\cache\Config;
 
 class LoopContext {
     /** @var LoopInterface */
@@ -37,7 +38,7 @@ class LoopContext {
     public function getDns() {
         if (!$this->dns) {
             $factory = new DnsFactory();
-            $this->dns = $factory->createCached('127.0.0.1', $this->getLoop());
+            $this->dns = $factory->createCached(Config::instance()->dns, $this->getLoop());
         }
 
         return $this->dns;

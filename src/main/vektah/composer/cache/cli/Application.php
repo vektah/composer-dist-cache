@@ -11,5 +11,6 @@ class Application extends SymfonyApplication {
     {
         parent::__construct();
         $this->add(new Web());
+        $this->add(new GenerateConfig());
     }
 }

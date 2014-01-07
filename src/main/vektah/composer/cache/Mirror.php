@@ -25,8 +25,9 @@ class Mirror {
     }
 
     private function get($remote, LoopContext $context, $ttl = 36000) {
-        if (!$this->cache[$remote]) {
-            $this->cache[$remote] = new CachedRemote("http://composer2.porky.lan$remote", $ttl);
+        if (!isset($this->cache[$remote])) {
+            $upstream = Config::instance()->upstream;
+            $this->cache[$remote] = new CachedRemote($upstream . $remote, $ttl);
         }
 
         return $this->cache[$remote]->get($context);
@@ -38,7 +39,7 @@ class Mirror {
         if ($hash = $this->hash_store->get_local_package_hash($vendor, $package, $remote_hash)) {
             return $deferred->resolve($hash);
         } else {
-            $this->get_package($vendor, $package)->then(function ($package_data) use ($vendor, $package, $remote_hash, $deferred) {
+            $this->get_package($vendor, $package, $remote_hash)->then(function ($package_data) use ($vendor, $package, $remote_hash, $deferred) {
                 $local_hash = hash('sha256', Json::pretty($package_data));
                 $this->hash_store->set_local_package_hash($vendor, $package, $remote_hash, $local_hash);
                 $deferred->resolve($local_hash);
@@ -55,7 +56,6 @@ class Mirror {
             return $deferred->resolve($hash);
         } else {
             $this->get_provider_include($provider_name, $remote_hash)->then(function ($package) use ($deferred, $provider_name, $remote_hash) {
-                echo Json::pretty($package);
                 $hash = hash('sha256', Json::pretty($package));
                 $this->hash_store->set_local_provider_include_hash($provider_name, $remote_hash, $hash);
                 $deferred->resolve($hash);
@@ -67,24 +67,38 @@ class Mirror {
 
     public function get_provider_include($include_name, $remote_hash) {
         $remote_hash = $remote_hash !== null ? "\$$remote_hash" : '';
-        return $this->get("/p/provider-$include_name$remote_hash.json", $this->context)->then(function($provider_include) {
+        $deferred = new Deferred();
+
+        $this->get("/p/provider-$include_name$remote_hash.json", $this->context)->then(function($provider_include) use ($deferred) {
             $data = Json::decode($provider_include);
 
-            $new_hashes = [];
+            // Don't want too many concurrent requests going off here... One or two per provider include should be ok though
+            $pending_requests = $data['providers'];
 
-            foreach ($data['providers'] as $provider_name => &$provider_data) {
-                list($vendor, $package) = explode('/', $provider_name, 2);
-                $new_hashes[$provider_name] = $this->get_local_package_hash($vendor, $package, $provider_data['sha256']);
-            }
-
-            return When::all($new_hashes)->then(function ($new_hashes) use ($data) {
-                foreach ($new_hashes as $provider_name => $hash) {
-                    $data['providers'][$provider_name]['sha256'] = $hash;
+            $process_next_request = function() use (&$pending_requests, &$data, $deferred, &$process_next_request) {
+                echo "Processing request.\n";
+                // Nothing left to do!
+                if (empty($pending_requests)) {
+                    $deferred->resolve($data);
                 }
+                $provider_data = reset($pending_requests);
+                $provider_name = key($pending_requests);
+                unset($pending_requests[$provider_name]);
+                list($vendor, $package) = explode('/', $provider_name, 2);
 
-                return $data;
-            });
+                $this->get_local_package_hash($vendor, $package, $provider_data['sha256'])->then(function($new_hash) use (&$data, $provider_name, $process_next_request) {
+                    $data['providers'][$provider_name]['sha256'] = $new_hash;
+
+                    $process_next_request();
+                });
+            };
+
+            for ($i = 0; $i < Config::instance()->concurrency; $i++) {
+                $process_next_request();
+            }
         });
+
+        return $deferred->promise();
     }
 
     public function get_packages_json() {
