@@ -31,6 +31,7 @@ class Dispatcher {
     }
 
     public function dispatch(Request $request, Response $response) {
+        echo $request->getPath()."\n";
         foreach ($this->routes as $route => $target) {
             if (preg_match("|^$route$|", $request->getPath(), $matches)) {
                 $result = call_user_func($target, $matches);

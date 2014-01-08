@@ -140,7 +140,7 @@ class GitDownloader {
         })->then(function() use ($zip_filename, $repo) {
             echo "Returning zip name\n";
 
-            $this->unlock($repo, $zip_filename);
+            $this->unlock($repo, $this->git_basedir() . $zip_filename);
 
             return $this->git_basedir() . $zip_filename;
         }, function($reason) use ($repo, $zip_filename) {

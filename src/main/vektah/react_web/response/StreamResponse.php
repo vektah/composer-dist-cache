@@ -18,7 +18,9 @@ class StreamResponse implements ControllerResponse {
 
     public function send(Response $response)
     {
-        $response->writeHead(200, ['Content-type' => $this->content_type]);
-        $this->stream->pipe($response);
+        if ($response->isWritable()) {
+            $response->writeHead(200, ['Content-type' => $this->content_type]);
+            $this->stream->pipe($response);
+        }
     }
 }

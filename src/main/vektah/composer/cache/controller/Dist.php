@@ -11,6 +11,7 @@ use vektah\composer\cache\HashStore;
 use vektah\composer\cache\GitDownloader;
 use vektah\react_web\CachedRemote;
 use vektah\react_web\LoopContext;
+use vektah\react_web\response\ContentTypeResponse;
 use vektah\react_web\response\InternalServerError;
 use vektah\react_web\response\PageNotFound;
 use vektah\react_web\response\StreamResponse;
@@ -33,7 +34,7 @@ class Dist {
 
         return $this->mirror->get_package($vendor, $package)->then(function ($package_data) use ($vendor, $package, $version, $matches) {
             if (!isset($package_data['packages']["$vendor/$package"][$version])) {
-                return new PageNotFound();
+                return new PageNotFound("$vendor/$package was not found in $version");
             }
 
             $package_version = $package_data['packages']["$vendor/$package"][$version];

@@ -45,11 +45,11 @@ class Web extends Command {
         $dispatcher->add_route('/p/{vendor}/{package}.json', [$packages_controller, 'package']);
         $dispatcher->add_route('/h/{vendor}/{package}.json', [$packages_controller, 'package_hash']);
 
-        $dispatcher->add_route('/dist/{vendor}/{package}-{version}${hash}.zip', [$dist_controller, 'download']);
-        $dispatcher->add_route('/dist/{vendor}/{package}-{version}.zip', [$dist_controller, 'download']);
+        $dispatcher->add_route('/dist/{vendor}/{package}/{version}/{hash}.zip', [$dist_controller, 'download']);
+        $dispatcher->add_route('/dist/{vendor}/{package}/{version}.zip', [$dist_controller, 'download']);
 
         $app = function(Request $request, Response $response) use ($dispatcher) {
-            echo "-----\n";
+            echo "----- ";
             $dispatcher->dispatch($request, $response);
         };
 
