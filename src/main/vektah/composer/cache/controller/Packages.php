@@ -11,11 +11,11 @@ use vektah\react_web\CachedRemote;
 class Packages {
     private $context;
 
-    function __construct($context)
+    function __construct($context, HashStore $hash_store, Mirror $mirror)
     {
         $this->context = $context;
-        $this->hash_store = new HashStore(__DIR__ . '/../../../../../../cache/hash_store.json');
-        $this->mirror = new Mirror($this->context, $this->hash_store);
+        $this->hash_store = $hash_store;
+        $this->mirror = $mirror;
     }
 
     public function packages() {

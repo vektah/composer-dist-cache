@@ -24,7 +24,7 @@
         "php": ">=5.4.0",
         "symfony/console": "*",
         "vektah/common": "*",
-        "react/react": "0.3.*"
+        "react/react": "dev-master"
     },
 
     "bin": [

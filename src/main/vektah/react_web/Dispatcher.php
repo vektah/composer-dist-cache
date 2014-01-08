@@ -7,6 +7,9 @@ use React\Http\Request;
 use React\Http\Response;
 use React\Promise\PromiseInterface;
 use vektah\common\json\Json;
+use vektah\react_web\response\ControllerResponse;
+use vektah\react_web\response\InternalServerError;
+use vektah\react_web\response\PageNotFound;
 
 /**
  * This should be replaced with somthing annotation driven..
@@ -35,6 +38,8 @@ class Dispatcher {
                 if ($result instanceof PromiseInterface) {
                     $result->then(function($result) use ($request, $response) {
                         $this->complete_response($response, $result);
+                    }, function($reason) use ($request, $response) {
+                        $this->complete_response($response, new InternalServerError($reason));
                     });
                     return;
                 }
@@ -44,14 +49,17 @@ class Dispatcher {
             }
         }
 
-        $response->writeHead(404);
-        $response->end('Page not found');
+        $this->complete_response($response, new PageNotFound());
     }
 
     private function complete_response(Response $response, $result) {
-        $result = Json::pretty($result);
+        if ($result instanceof ControllerResponse) {
+            $result->send($response);
+        } else {
+            $result = Json::pretty($result);
 
-        $response->writeHead(200, ['Content-Type' => 'application/json']);
-        $response->end($result);
+            $response->writeHead(200, ['Content-Type' => 'application/json']);
+            $response->end($result);
+        }
     }
 } 
