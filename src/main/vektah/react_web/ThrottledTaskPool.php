@@ -41,7 +41,6 @@ class ThrottledTaskPool extends EventEmitter {
                 if (is_callable($task)) {
                     $task = $task();
                 }
-                print_r(['task' => $task, $task_name]);
                 $task->then(function($result) use ($task_name) {
                     $this->complete[$task_name] = $result;
                     unset($this->processing[$task_name]);
