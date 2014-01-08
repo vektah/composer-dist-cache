@@ -131,7 +131,7 @@ class Mirror {
                 foreach ($package as $version => &$version_data) {
                     $version_data['dist'] = [
                         'type' => 'zip',
-                        'url' => Config::instance()->baseurl . "dist/$package_name-$version.zip",
+                        'url' => Config::instance()->baseurl . "dist/$package_name-$version\${$version_data['source']['reference']}.zip",
                         'reference' => $version
                     ];
                 }

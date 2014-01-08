@@ -96,6 +96,13 @@ class GitDownloader {
         unset($this->locks[$repo]);
     }
 
+    private function unlock_failure($repo, $reason) {
+        foreach ($this->locks[$repo] as $lock) {
+            $lock->reject($reason);
+        }
+        unset($this->locks[$repo]);
+    }
+
     private function wait($repo) {
         $deferred = new Deferred();
         $this->locks[$repo][] = $deferred;
@@ -106,7 +113,7 @@ class GitDownloader {
         $repo_dir = $this->git_basedir() . $this->repo_dir_name($repo);
         $zip_filename = $this->repo_dir_name($repo) . '_' . $reference . '.zip';
         if (file_exists($this->git_basedir() . $zip_filename)) {
-            echo "Serving cached zipball $zip_filename";
+            echo "Serving cached zipball $zip_filename\n";
             return new FulfilledPromise($this->git_basedir() . $zip_filename);
         }
 
@@ -136,6 +143,13 @@ class GitDownloader {
             $this->unlock($repo, $zip_filename);
 
             return $this->git_basedir() . $zip_filename;
+        }, function($reason) use ($repo, $zip_filename) {
+                echo "FAIL: $reason\n";
+            if (file_exists($this->git_basedir() . $zip_filename)) {
+                unlink($this->git_basedir() . $zip_filename);
+            }
+            $this->unlock_failure($repo, $reason);
+            return \React\Promise\reject($reason);
         });
     }
 } 

@@ -31,7 +31,7 @@ class Dist {
         $package = $matches['package'];
         $version = $matches['version'];
 
-        return $this->mirror->get_package($vendor, $package)->then(function ($package_data) use ($vendor, $package, $version) {
+        return $this->mirror->get_package($vendor, $package)->then(function ($package_data) use ($vendor, $package, $version, $matches) {
             if (!isset($package_data['packages']["$vendor/$package"][$version])) {
                 return new PageNotFound();
             }
@@ -46,7 +46,13 @@ class Dist {
                 return new InternalServerError('Only git sources are currently supported');
             }
 
-            return $this->git_downloader->fetch_zip($package_version['source']['url'], $package_version['source']['reference'])->then(function($zip_filename) {
+            if (isset($matches['hash'])) {
+                $hash = $matches['hash'];
+            } else {
+                $hash = $package_version['source']['reference'];
+            }
+
+            return $this->git_downloader->fetch_zip($package_version['source']['url'], $hash)->then(function($zip_filename) {
                 return new StreamResponse('application/zip', new Stream(fopen($zip_filename, 'r'), $this->context->getLoop()));
             });
         });
