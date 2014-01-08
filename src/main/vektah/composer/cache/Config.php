@@ -21,6 +21,8 @@ class Config {
 
     public $port = '8000';
 
+    public $proxy = null;
+
     private static $instance;
 
     public static function instance() {

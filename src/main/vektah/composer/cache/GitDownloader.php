@@ -40,6 +40,12 @@ class GitDownloader {
     private function cmd($command, $cwd) {
         $deferred = new Deferred();
 
+        $env = [];
+
+        if ($proxy = Config::instance()->proxy) {
+            $env['http_proxy'] = $proxy;
+        }
+
         $process = new Process($command, $cwd);
 
         $process->on('exit', function($exitcode) use ($process, &$buffer, $command, $deferred) {
@@ -112,6 +118,7 @@ class GitDownloader {
     public function fetch_zip($repo, $reference) {
         $repo_dir = $this->git_basedir() . $this->repo_dir_name($repo);
         $zip_filename = $this->repo_dir_name($repo) . '_' . $reference . '.zip';
+
         if (file_exists($this->git_basedir() . $zip_filename)) {
             echo "Serving cached zipball $zip_filename\n";
             return new FulfilledPromise($this->git_basedir() . $zip_filename);
