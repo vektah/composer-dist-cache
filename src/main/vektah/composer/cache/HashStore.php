@@ -32,11 +32,12 @@ class HashStore {
     }
 
     public function get_remote_package_hash($vendor, $package, $remote_hash = null) {
-        if (!isset($this->data['package_hashes_revesed'][$vendor][$package][$remote_hash])) {
+        if (!isset($this->data['package_hashes_reversed'][$vendor][$package][$remote_hash])) {
+            echo "Could not find $vendor/$package with $remote_hash";
             return null;
         }
 
-        return $this->data['package_hashes_revesed'][$vendor][$package][$remote_hash];
+        return $this->data['package_hashes_reversed'][$vendor][$package][$remote_hash];
     }
 
     public function set_local_package_hash($vendor, $package, $remote_hash, $local_hash) {

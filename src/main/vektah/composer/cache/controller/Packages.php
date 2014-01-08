@@ -22,10 +22,6 @@ class Packages {
         return $this->mirror->get_packages_json();
     }
 
-    public function package_hash(array $matches) {
-        return $this->mirror->get_local_package_hash($matches['vendor'], $matches['package']);
-    }
-
     public function provider(array $matches) {
         $remote_hash = $this->hash_store->get_remote_provider_include_hash($matches['provider'], $matches['hash']);
         return $this->mirror->get_provider_include($matches['provider'], $remote_hash);
