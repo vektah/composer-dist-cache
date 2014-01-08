@@ -8,11 +8,18 @@ class Config {
     /** @var string the upstream packagist or satis server to dump from */
     public $upstream = 'http://packagist.org';
 
+    /** @var string The url that this site is known by */
+    public $baseurl = 'http://testing.vm:1234/';
+
     /** @var string the dns server to use for async requests */
     public $dns = '8.8.8.8';
 
     /** @var int The number of concurrent tasks PER INCLUDE. This means it will probably get multiplied by 4. This is only really advantageous during warmup */
-    public $concurrency = 1;
+    public $concurrency = 4;
+
+    public $hostname = 'localhost';
+
+    public $port = '8000';
 
     private static $instance;
 

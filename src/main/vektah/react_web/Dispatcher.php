@@ -20,8 +20,8 @@ class Dispatcher {
     }
 
     public function add_route($route, callable $target) {
-        $route = preg_replace_callback('/\{(?P<part>[a-zA-Z0-9\-_]*)\}/', function($matches) {
-            return "(?P<{$matches['part']}>[a-zA-Z0-9\\-_]*)";
+        $route = preg_replace_callback('/\{(?P<part>[a-zA-Z0-9\-_\.]*)\}/', function($matches) {
+            return "(?P<{$matches['part']}>[a-zA-Z0-9\\-_\\.]*)";
         }, $route);
         $route = str_replace('$', '\$', $route);
         $this->routes[$route] = $target;

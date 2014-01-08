@@ -8,6 +8,7 @@ use React\Promise\When;
 use vektah\common\json\Json;
 use vektah\react_web\CachedRemote;
 use vektah\react_web\LoopContext;
+use vektah\react_web\ThrottledTaskPool;
 
 class Mirror {
     private $context;
@@ -69,33 +70,26 @@ class Mirror {
         $remote_hash = $remote_hash !== null ? "\$$remote_hash" : '';
         $deferred = new Deferred();
 
-        $this->get("/p/provider-$include_name$remote_hash.json", $this->context)->then(function($provider_include) use ($deferred) {
+        $this->get("/p/provider-$include_name$remote_hash.json", $this->context)->then(function($provider_include) use ($deferred, $include_name) {
             $data = Json::decode($provider_include);
 
-            // Don't want too many concurrent requests going off here... One or two per provider include should be ok though
-            $pending_requests = $data['providers'];
+            $pool = new ThrottledTaskPool($this->context->getLoop(), Config::instance()->concurrency);
 
-            $process_next_request = function() use (&$pending_requests, &$data, $deferred, &$process_next_request) {
-                echo "Processing request.\n";
-                // Nothing left to do!
-                if (empty($pending_requests)) {
-                    $deferred->resolve($data);
-                }
-                $provider_data = reset($pending_requests);
-                $provider_name = key($pending_requests);
-                unset($pending_requests[$provider_name]);
-                list($vendor, $package) = explode('/', $provider_name, 2);
+            foreach ($data['providers'] as $provider_name => $provider_data) {
+                $pool->add($provider_name, function() use ($provider_name, $provider_data) {
+                    list($vendor, $package) = explode('/', $provider_name, 2);
 
-                $this->get_local_package_hash($vendor, $package, $provider_data['sha256'])->then(function($new_hash) use (&$data, $provider_name, $process_next_request) {
-                    $data['providers'][$provider_name]['sha256'] = $new_hash;
-
-                    $process_next_request();
+                    return $this->get_local_package_hash($vendor, $package, $provider_data['sha256']);
                 });
-            };
-
-            for ($i = 0; $i < Config::instance()->concurrency; $i++) {
-                $process_next_request();
             }
+
+            $pool->on('end', function($result) use ($deferred, $data) {
+                foreach ($result as $provider_name => $sha) {
+                    $data['providers'][$provider_name]['sha256'] = $sha;
+                }
+
+                $deferred->resolve($data);
+            });
         });
 
         return $deferred->promise();
@@ -125,8 +119,20 @@ class Mirror {
 
     public function get_package($vendor, $package, $remote_hash = null) {
         $remote_hash = $remote_hash !== null ? "\$$remote_hash" : '';
-        return $this->get("/p/$vendor/$package$remote_hash.json", $this->context)->then(function($package) {
-            return Json::decode($package);
+        return $this->get("/p/$vendor/$package$remote_hash.json", $this->context)->then(function($packages) {
+            $packages = Json::decode($packages);
+
+            foreach ($packages['packages'] as $package_name => &$package) {
+                foreach ($package as $version => &$version_data) {
+                    $version_data['dist'] = [
+                        'type' => 'zip',
+                        'url' => Config::instance()->baseurl . "dist/$package_name-$version.zip",
+                        'reference' => $version
+                    ];
+                }
+            }
+
+            return $packages;
         });
     }
 } 
