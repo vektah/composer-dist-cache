@@ -132,7 +132,11 @@ class GitDownloader {
         echo "Locking\n";
         $this->lock($repo);
 
-        return $this->get_checkout($repo)->then(function() use ($reference, $repo_dir) {
+        return $this->get_checkout($repo)->then(function() use ($repo_dir) {
+            echo "Fetching origin\n";
+
+            return $this->cmd("git fetch origin", $repo_dir);
+        })->then(function() use ($reference, $repo_dir) {
             echo "Fetching $reference\n";
 
             return $this->cmd("git fetch origin $reference", $repo_dir);
