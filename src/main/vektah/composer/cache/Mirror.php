@@ -96,7 +96,7 @@ class Mirror {
 
     public function get_packages_json() {
         $deferred = new Deferred();
-        $this->get("/packages.json", $this->context, 30)->then(function($provider_include) use ($deferred) {
+        $this->get("/packages.json", $this->context, 10)->then(function($provider_include) use ($deferred) {
             $data = Json::decode($provider_include);
 
             $pool = new ThrottledTaskPool($this->context->getLoop(), Config::instance()->concurrency);
@@ -124,7 +124,8 @@ class Mirror {
 
     public function get_package($vendor, $package, $remote_hash = null) {
         $remote_hash = $remote_hash !== null ? "\$$remote_hash" : '';
-        return $this->get("/p/$vendor/$package$remote_hash.json", $this->context)->then(function($packages) {
+        $ttl = $remote_hash ? 3600 : 10;
+        return $this->get("/p/$vendor/$package$remote_hash.json", $this->context, $ttl)->then(function($packages) {
             $packages = Json::decode($packages);
 
             foreach ($packages['packages'] as $package_name => &$package) {
