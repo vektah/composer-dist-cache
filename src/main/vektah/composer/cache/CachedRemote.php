@@ -1,12 +1,11 @@
 <?php
 
 
-namespace vektah\react_web;
+namespace vektah\composer\cache;
 
 use React\Promise\Deferred;
 use React\Promise\FulfilledPromise;
-use vektah\common\json\InvalidJsonException;
-use vektah\common\json\Json;
+use vektah\react_web\LoopContext;
 
 class CachedRemote {
     private $last_modified = 0;
@@ -17,6 +16,7 @@ class CachedRemote {
 
     function __construct($remote, $ttl = 30)
     {
+        echo "Remote: " . $remote ."\n";
         $this->remote = $remote;
         $this->ttl = $ttl;
         $local_name = preg_replace('|http[s]?://|', '', $remote);

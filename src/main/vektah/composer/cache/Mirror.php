@@ -4,8 +4,8 @@
 namespace vektah\composer\cache;
 
 use React\Promise\Deferred;
+use vektah\common\json\InvalidJsonException;
 use vektah\common\json\Json;
-use vektah\react_web\CachedRemote;
 use vektah\react_web\LoopContext;
 use vektah\react_web\ThrottledTaskPool;
 
@@ -30,7 +30,14 @@ class Mirror {
             $this->cache[$remote] = new CachedRemote($upstream . $remote, $ttl);
         }
 
-        return $this->cache[$remote]->get($context);
+        return $this->cache[$remote]->get($context)->then(function($result) use ($remote) {
+            try {
+                return Json::decode($result);
+            } catch (InvalidJsonException $e) {
+                $this->flush($remote);
+                throw $e;
+            }
+        });
     }
 
     public function get_local_package_hash($vendor, $package, $remote_hash = null) {
@@ -69,9 +76,7 @@ class Mirror {
         $remote_hash = $remote_hash !== null ? "\$$remote_hash" : '';
         $deferred = new Deferred();
 
-        $this->get("/p/provider-$include_name$remote_hash.json", $this->context)->then(function($provider_include) use ($deferred, $include_name) {
-            $data = Json::decode($provider_include);
-
+        $this->get("/p/provider-$include_name$remote_hash.json", $this->context)->then(function($data) use ($deferred, $include_name) {
             $pool = new ThrottledTaskPool($this->context->getLoop(), Config::instance()->concurrency);
 
             foreach ($data['providers'] as $provider_name => $provider_data) {
@@ -96,9 +101,7 @@ class Mirror {
 
     public function get_packages_json() {
         $deferred = new Deferred();
-        $this->get("/packages.json", $this->context, 10)->then(function($provider_include) use ($deferred) {
-            $data = Json::decode($provider_include);
-
+        $this->get("/packages.json", $this->context, 10)->then(function($data) use ($deferred) {
             $pool = new ThrottledTaskPool($this->context->getLoop(), Config::instance()->concurrency);
 
             $pool->on('end', function($result) use ($deferred, $data) {
@@ -126,8 +129,6 @@ class Mirror {
         $remote_hash = $remote_hash !== null ? "\$$remote_hash" : '';
         $ttl = $remote_hash ? 3600 : 10;
         return $this->get("/p/$vendor/$package$remote_hash.json", $this->context, $ttl)->then(function($packages) {
-            $packages = Json::decode($packages);
-
             foreach ($packages['packages'] as $package_name => &$package) {
                 foreach ($package as $version => &$version_data) {
                     $version_data['dist'] = [
@@ -140,5 +141,11 @@ class Mirror {
 
             return $packages;
         });
+    }
+
+    public function flush($remote) {
+        if (isset($this->cache[$remote])) {
+            $this->cache[$remote]->flush();
+        }
     }
 } 

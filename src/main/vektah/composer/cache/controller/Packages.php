@@ -3,10 +3,8 @@
 
 namespace vektah\composer\cache\controller;
 
-use vektah\common\json\Json;
-use vektah\composer\cache\Mirror;
 use vektah\composer\cache\HashStore;
-use vektah\react_web\CachedRemote;
+use vektah\composer\cache\Mirror;
 
 class Packages {
     private $context;

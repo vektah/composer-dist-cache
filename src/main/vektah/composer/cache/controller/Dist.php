@@ -3,15 +3,10 @@
 
 namespace vektah\composer\cache\controller;
 
-use React\Http\Response;
 use React\Stream\Stream;
-use vektah\common\json\Json;
-use vektah\composer\cache\Mirror;
-use vektah\composer\cache\HashStore;
 use vektah\composer\cache\GitDownloader;
-use vektah\react_web\CachedRemote;
+use vektah\composer\cache\Mirror;
 use vektah\react_web\LoopContext;
-use vektah\react_web\response\ContentTypeResponse;
 use vektah\react_web\response\InternalServerError;
 use vektah\react_web\response\PageNotFound;
 use vektah\react_web\response\StreamResponse;

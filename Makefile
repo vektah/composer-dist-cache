@@ -17,6 +17,10 @@ cleanvendor:
 	rm -rf composer.lock
 	rm -rf vendor
 
+lintfix: depends
+	$(BUGFREE_BIN) lint src/main -a
+	echo
+
 lint: depends
 	echo " --- Lint ---"
 	$(BUGFREE_BIN) lint src/main
