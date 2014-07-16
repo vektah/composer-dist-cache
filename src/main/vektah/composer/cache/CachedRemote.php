@@ -34,7 +34,8 @@ class CachedRemote {
         }
     }
 
-    public function get(LoopContext $context) {
+    public function get(LoopContext $context)
+    {
         if ($this->last_modified > time() - $this->ttl) {
             echo "Serving cached {$this->remote}\n";
             return new FulfilledPromise($this->cached);
@@ -68,5 +69,14 @@ class CachedRemote {
         $request->end();
 
         return $deferred->promise();
+    }
+
+    public function flush()
+    {
+        $this->cached = null;
+        $this->last_modified = 0;
+        if (file_exists($this->local_name)) {
+            unlink($this->local_name);
+        }
     }
 } 
