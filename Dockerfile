@@ -25,5 +25,4 @@ RUN mkdir /opt/composer-dist-cache/cache
 WORKDIR /opt/composer-dist-cache
 EXPOSE 1234
 
-#invoke with docker run --rm -tin -p 1234:1234 vektah/composer-dist-cache --dns 10.0.0.1 --upstream 'http://composer2.porky.lan' --proxy 'proxy.benon.com:8080'
 ENTRYPOINT ["/usr/bin/php", "/opt/composer-dist-cache/bin/run", "web", "0.0.0.0", "1234", "-vvv"]
