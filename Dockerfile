@@ -22,7 +22,10 @@ RUN cd /opt && git clone https://github.com/Vektah/composer-dist-cache.git
 RUN cd /opt/composer-dist-cache && composer install --no-dev
 RUN mkdir /opt/composer-dist-cache/cache
 
+RUN echo '{"hostname": "0.0.0.0", "port": 1234}' > /opt/composer-dist-cache/config.json
+
 WORKDIR /opt/composer-dist-cache
 EXPOSE 1234
 
-ENTRYPOINT ["/usr/bin/php", "/opt/composer-dist-cache/bin/run", "web", "0.0.0.0", "1234", "-vvv"]
+CMD ["web", "-vvv"]
+ENTRYPOINT ["/usr/bin/php", "/opt/composer-dist-cache/bin/run"]
