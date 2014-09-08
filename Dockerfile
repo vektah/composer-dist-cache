@@ -1,10 +1,11 @@
-FROM debian
+FROM debian:wheezy
 
 USER root
 
 # Install PHP
-RUN apt-get update
-RUN apt-get install -y -q php5-cli git curl
+RUN ["/bin/bash", "-c", "echo deb http://ftp.debian.org/debian/ wheezy-backports main non-free contrib >> /etc/apt/sources.list"]
+RUN apt-get update && apt-get -y -q -t wheezy-backports install git
+RUN apt-get install -y -q php5-cli curl zip bzip2 gzip
 
 # Install composer
 RUN curl -s http://getcomposer.org/installer | php && mv composer.phar /bin/composer
